@@ -11,8 +11,12 @@ Module Bookstore
         InvalidData CommonMisspelling 'It is not allowed to enter misspelled word "curiousity".';
 
         Logging;
+        DateTime Created {CreationTime;}
+
+        DateTime TitleChangeTime { ModificationTimeOf Bookstore.Book.Title;}
 
         Reference Author Bookstore.Person;
+        Reference Genre;
     }
 
     Entity Person
@@ -46,6 +50,13 @@ Module Bookstore
     Entity Topic
     {
         ShortString Name { Unique; Required; }
+
+        ItemFilter IsAdminTopic 'item => item.Name == "Admin"';
+        Lock IsAdminTopic 'Cannot change Admin topic';
+
+        Logging { AllProperties; }
+
+        Deactivatable;
     }
 
     Entity BookTopic
@@ -55,7 +66,27 @@ Module Bookstore
 
         UniqueMultiple 'Book Topic';
     }
+
+    Entity Shipment
+    {
+        Reference Book { Required; }
+        ShortString Address;
+        DateTime Created { CreationTime; }
+    }
     
+    Entity ApproveShipment
+    {
+        DateTime EffectiveSince { CreationTime; }
+        Reference Shipment;
+
+        Is Bookstore.ShipmentEvent
+        {
+            Implements Bookstore.ShipmentEvent.NewStatus Bookstore.ShipmentStatus.Approved;
+
+            // Slower alternative: Calling the database function:
+            //Implements Bookstore.ShipmentEvent.NewStatus "Bookstore.ShipmentStatus_Approved()";
+        }
+    }
 }
 
 

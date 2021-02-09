@@ -1,0 +1,9 @@
+﻿Module Bookstore
+{
+	Polymorphic ShipmentEvent
+    {
+        DateTime EffectiveSince;
+        Reference Shipment;
+        Reference NewStatus Bookstore.ShipmentStatus;
+    }
+}

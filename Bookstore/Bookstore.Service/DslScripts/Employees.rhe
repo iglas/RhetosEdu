@@ -9,7 +9,7 @@
     Entity Manager
     {
         Extends Employees.Employee;
-        ShortString Bonus;
+        ShortString Bonus { DefaultValue 'item=> "10.000€"';}
     }
 
     Entity Education
@@ -32,5 +32,7 @@
         Reference Department { Required; } 
 
         UniqueMultiple 'Employee Department';
+
+        DenyUserEdit;
     }
 }
