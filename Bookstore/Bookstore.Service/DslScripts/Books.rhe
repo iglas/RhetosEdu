@@ -10,6 +10,11 @@ Module Bookstore
         ItemFilter CommonMisspelling 'book => book.Title.Contains("curiousity")';
         InvalidData CommonMisspelling 'It is not allowed to enter misspelled word "curiousity".';
 
+        ItemFilter LongBooks 'item => item.NumberOfPages >= 500';
+
+        //ItemFilter OnlyNumbersRule 'book=>book.Title.Any(x => System.Char.IsLetter(x))'; //Ovo ne radi
+        //InvalidData OnlyNumbersRule 'Title contains only numbers.';
+
         Logging;
         DateTime Created {CreationTime;}
 
@@ -17,6 +22,38 @@ Module Bookstore
 
         Reference Author Bookstore.Person;
         Reference Genre;
+
+        ComposableFilterBy GetByAuthor '(query, repository, parameter) =>
+            {
+                return query.Where(item => item.Author.Name.Contains(parameter.Name));
+            }';
+
+        FilterBy ComplexSearch '(repository, parameter) =>
+        {
+            var query = repository.Bookstore.Book.Query(item => item.NumberOfPages >= parameter.MinimumPages);
+            if (parameter.ForeignBooksOnly == true)
+                query = query.Where(item => item.Extension_ForeignBook.ID != null);
+            Book[] books = query.ToSimple().ToArray();
+
+            if (parameter.MaskTitles == true)
+                foreach (var book in books.Where(b => !string.IsNullOrEmpty(b.Title)))
+                    book.Title = book.Title.First() + "***" + book.Title.Last();
+
+            return books;
+        }';
+
+    }
+
+    Parameter GetByAuthor
+    {
+        ShortString Name;
+    }
+
+    Parameter ComplexSearch
+    {
+        Integer MinimumPages;
+        Bool ForeignBooksOnly;
+        Bool MaskTitles;
     }
 
     Entity Person
@@ -28,6 +65,9 @@ Module Bookstore
     {
         Reference Book {Detail; }
         LongString Text;
+
+        ItemFilter NegativeComment 'comment=>comment.Text.Contains("bad") || comment.Text.Contains("worst")';
+        
     }
 
     Entity ChildrensBook
@@ -37,6 +77,10 @@ Module Bookstore
         Integer AgeFrom;
         Integer AgeTo;
         IntegerRange AgeFrom AgeTo;
+
+        ItemFilter UpTo2Years 'book => book.AgeTo <= 2';
+        ItemFilter UpTo4Years 'book => book.AgeTo >= 2 && book.AgeTo <= 4';
+        ItemFilter From4Years 'book => book.AgeFrom >= 4';
     }
 
     Entity ForeignBook
@@ -45,6 +89,10 @@ Module Bookstore
 
         ShortString OriginalLanguage;
         Reference Translator Bookstore.Person;
+
+        
+        ItemFilter CroLanguage 'book=>book.OriginalLanguage == "HR"';
+        InvalidData CroLanguage 'HR is not foreign language';
     }
 
     Entity Topic
@@ -86,6 +134,25 @@ Module Bookstore
             // Slower alternative: Calling the database function:
             //Implements Bookstore.ShipmentEvent.NewStatus "Bookstore.ShipmentStatus_Approved()";
         }
+    }
+
+    Entity BookRating
+    {
+        Extends Bookstore.Book;
+        Decimal Rating; // ComputedFrom Bookstore.ComputeBookRating
+    }
+
+    Entity Disposal
+    {
+        Reference Book { Required; }
+        LongString Explanation { Required; }
+        DateTime EffectiveSince { CreationTime; }
+
+        ItemFilter ImportantBookExplanation 'item => item.Book.Title.Contains("important") && item.Explanation.Length < 50';
+        InvalidData ImportantBookExplanation 'When disposing an important book, the explanation should be at least 50 characters long.';
+
+        ItemFilter HighRating 'item => item.Book.Extension_BookRating.Rating > 100';
+        InvalidData HighRating 'You are not allowed to dispose a book with rating above 100.';
     }
 }
 

@@ -3,6 +3,7 @@ using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using Rhetos.Dom.DefaultConcepts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,8 +24,9 @@ namespace Bookstore.Playground
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
 
+                
 
-                //repository.Bookstore.Book.Load()
+                /*                            //DAY2
 
                 //1
                 foreach (var book in  repository.Bookstore.Book.Load())
@@ -64,6 +66,23 @@ namespace Bookstore.Playground
 
                 //repository.Bookstore.Insert5Books.Execute(null);
                 //repository.Bookstore.CreatePrincipal.Execute(new CreatePrincipal() {  Name = "Ivan Glas" });//ID ne radi jer u .rhe skripti tip podataka je Guid, pa ne radi konverzija u Guid?
+                
+
+                //DAY 2  */
+
+                //DAY3
+                var filterParametar = new Bookstore.LongBooks();
+                var q = repository.Bookstore.Book.Query(filterParametar, typeof(Bookstore.LongBooks));
+                
+
+                var newForeignBook = new ForeignBook() { ID = Guid.Parse("fb7237c7-aa8f-4c8c-8bee-589e32c8bee3"), OriginalLanguage="HR"};
+                repository.Bookstore.ForeignBook.Save(new List<ForeignBook> { newForeignBook }, null, null);
+                //repository.Bookstore.Book.Insert(newBook);
+
+                ConsoleDump.Extensions.Dump(q);
+
+                Console.WriteLine(q.ToString());
+
                 container.CommitChanges();
                 Console.ReadLine();
                 // <<<< Copy-paste the example code here >>>>

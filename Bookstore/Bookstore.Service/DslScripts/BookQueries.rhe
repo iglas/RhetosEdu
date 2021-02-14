@@ -1,5 +1,7 @@
 ﻿Module Bookstore
 {
+
+
     Browse BookGrid Bookstore.Book
     {
         Take Code;
@@ -87,5 +89,18 @@
     {
         Extends Bookstore.Book;
         Decimal Rating;
+    }   
+    
+    SqlView ActiveEmployees <SQL\BookView.sql>;    
+
+    SqlQueryable ActiveEmployeesFromSqlView 
+
+    "SELECT * FROM Bookstore.ActiveEmployees"
+
+    {
+        ShortString Title;
+        ShortString Code;
+        ShortString Genre;
+        Bool Fiction;
     }
 }

@@ -4,6 +4,31 @@
     {
         ShortString Name;
         ShortString VAT;
+
+        FilterBy EmployeeSearch '(repository, parameter) =>
+        {   
+            var query = repository.Employees.EmployeeDepartment.Query(item => item.Department.Code == parameter.DepartmentCode);
+            //navigacijski property Employee->EmployeeDepartment?
+            if(parameter.OnlyManagers.HasValue && parameter.OnlyManagers.Value)
+            {
+                query.Where(item=>item.Employee.Extension_Manager != null);
+            }
+            
+            if(parameter.EducationName != null)
+            {
+                 return repository.Employees.Education.Query(e => e.Description.Contains(parameter.EducationName) && query.Select(x=>x.EmployeeID).Contains(e.EmployeeID)).Select(x=>x.Employee).ToSimple().ToArray();
+            }
+            
+
+            return query.Select(item=>item.Employee).ToSimple().ToArray();
+        }';
+    }
+
+    Parameter EmployeeSearch
+    {
+        ShortString DepartmentCode;
+        Bool OnlyManagers;
+        ShortString EducationName;
     }
 
     Entity Manager
