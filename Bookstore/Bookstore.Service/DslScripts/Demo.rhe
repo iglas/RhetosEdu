@@ -1,0 +1,90 @@
+﻿Module Demo
+{
+	Polymorphic MoneyTransaction
+    {
+        DateTime EventDate;
+        Money Amount;
+    }
+
+    Entity BorrowMoney
+    {
+        ShortString FromWhom;
+        DateTime EventDate;
+        Money Amount;
+
+        Is Demo.MoneyTransaction;
+        // The EventDate and Amount are automatically mapped.
+    }
+
+    Entity LendMoney
+    {
+        ShortString ToWhom;
+        DateTime EventDate;
+        Money Amount;
+
+        Is Demo.MoneyTransaction
+        {
+            Implements Demo.MoneyTransaction.Amount '-Amount';
+            // The Amount in the MoneyTransaction related to the LendMoney record will have a negative value.
+        }
+    }
+
+    Polymorphic SalesItem
+    {
+        ShortString Code;
+        Money Price;
+        ShortString Description;
+    }
+
+    Entity Food
+    {
+        ShortString Code { AutoCode; DefaultValue 'item => "B+++"'; }
+        Money Price { Required; }
+        ShortString Description;
+        Integer Calories;
+
+        Is Demo.SalesItem;
+    }
+
+    Entity Person
+    {
+        ShortString Name;
+    }
+
+    Entity Book
+    {
+        ShortString Code { AutoCode; DefaultValue 'item => "F+++"'; }
+        Money Price; // Not required. Some books are not on sale.
+        ShortString Title { Required; }
+        Integer NumberOfPages;
+        Reference Person;
+
+        Is Demo.SalesItem
+        {
+            //Implements Demo.SalesItem.Description "Title
+            //    + ISNULL(', ' + CAST(NumberOfPages AS NVARCHAR(10)) + ' pages', '')";
+                
+            //Where 'Price IS NOT NULL';
+
+            Implements Demo.SalesItem.Description "(SELECT Title + IsNULL(', ' + p.Name,'') FROM Demo.Book b inner join Demo.Person p on p.ID=b.PersonID)";
+            WHERE 'Price is not null';
+        }
+    }
+
+    // Polymorphic can be used as any other queryable data structure:
+
+    Browse SalesItemGrid Demo.SalesItem
+    {
+        Take Code;
+        Take Price;
+        Take 'Book.NumberOfPages';
+    }
+
+    // Polymorphic can even have a detail entity:
+
+    Entity SalesItemComment
+    {
+        Reference SalesItem { Detail; }
+        LongString Comment;
+    }
+}

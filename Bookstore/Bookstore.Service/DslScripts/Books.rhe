@@ -160,26 +160,7 @@
         UniqueMultiple 'Book Topic';
     }
 
-    Entity Shipment
-    {
-        Reference Book { Required; }
-        ShortString Address;
-        DateTime Created { CreationTime; }
-    }
     
-    Entity ApproveShipment
-    {
-        DateTime EffectiveSince { CreationTime; }
-        Reference Shipment;
-
-        Is Bookstore.ShipmentEvent
-        {
-            Implements Bookstore.ShipmentEvent.NewStatus Bookstore.ShipmentStatus.Approved;
-
-            // Slower alternative: Calling the database function:
-            //Implements Bookstore.ShipmentEvent.NewStatus "Bookstore.ShipmentStatus_Approved()";
-        }
-    }
 
     Entity BookRating
     {
@@ -203,6 +184,34 @@
     Entity Country
     {
         CodeTable;
+    }
+
+
+     SqlQueryable ComputeBookInfo
+        "
+            SELECT
+                b.ID,
+                NumberOfComments = COUNT(bc.ID)
+            FROM
+                Bookstore.Book b
+                LEFT JOIN Bookstore.Comment bc ON bc.BookID = b.ID
+            GROUP BY
+                b.ID
+        "
+    {
+        Extends Bookstore.Book;
+        Integer NumberOfComments;
+
+        ChangesOnLinkedItems Bookstore.Comment.Book;
+    }
+
+    Entity BookInfo
+    {
+        ComputedFrom Bookstore.ComputeBookInfo
+        {
+            AllProperties;
+            KeepSynchronized;
+        }
     }
 }
 

@@ -1,0 +1,69 @@
+﻿Module ProjectManagement
+{
+	Entity Project
+	{
+		ShortString Name;
+        ShortString PMO;
+		DateTime DateCreated {CreationTime; }
+	}
+
+
+	Hardcoded ProjectPhases
+    {
+        Entry Analisys;
+        Entry Development;
+        Entry Testing;
+        Entry Production;
+    }
+
+	Polymorphic ProjectEvent
+    {
+        DateTime EffectiveSince;
+        Reference Project;
+        Reference NewPhase ProjectManagement.ProjectPhases;
+    }
+
+    Entity AnalisysStarted
+    {
+        DateTime EffectiveSince { CreationTime; }
+        Reference Project;
+
+        Is ProjectManagement.ProjectEvent
+        {
+            Implements ProjectManagement.ProjectEvent.NewPhase ProjectManagement.ProjectPhases.Analisys;
+        }
+    }
+
+    Entity DevelopmentStarted
+    {
+        DateTime EffectiveSince { CreationTime; }
+        Reference Project;
+
+        Is ProjectManagement.ProjectEvent
+        {
+            Implements ProjectManagement.ProjectEvent.NewPhase ProjectManagement.ProjectPhases.Development;
+        }
+    }
+
+    Entity TestingStarted
+    {
+        DateTime EffectiveSince { CreationTime; }
+        Reference Project;
+
+        Is ProjectManagement.ProjectEvent
+        {
+            Implements ProjectManagement.ProjectEvent.NewPhase ProjectManagement.ProjectPhases.Testing;
+        }
+    }
+
+    Entity ProductionStarted
+    {
+        DateTime EffectiveSince { CreationTime; }
+        Reference Project;
+
+        Is ProjectManagement.ProjectEvent
+        {
+            Implements ProjectManagement.ProjectEvent.NewPhase ProjectManagement.ProjectPhases.Production;
+        }
+    }
+}
