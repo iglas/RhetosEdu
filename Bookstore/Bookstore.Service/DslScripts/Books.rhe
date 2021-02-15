@@ -1,5 +1,4 @@
-﻿
-Module Bookstore
+﻿Module Bookstore
 {
     Entity Book
     {
@@ -18,10 +17,14 @@ Module Bookstore
         Logging;
         DateTime Created {CreationTime;}
 
+        DateTime LastModifiedTime;
+
         DateTime TitleChangeTime { ModificationTimeOf Bookstore.Book.Title;}
 
         Reference Author Bookstore.Person;
         Reference Genre;
+
+        Reference Employee Common.Principal;
 
         ComposableFilterBy GetByAuthor '(query, repository, parameter) =>
             {
@@ -42,6 +45,37 @@ Module Bookstore
             return books;
         }';
 
+
+        SaveMethod
+        {
+            Initialization SetLastModifiedTime
+                '
+                    foreach (var item in updatedNew)
+                    {
+                        item.LastModifiedTime = DateTime.Now;
+                    }
+                ';
+        }
+
+        RowPermissions
+        {
+            AllowRead ReadAllBooks 'context =>
+                    {
+                        return item => true;
+                    }';
+
+             AllowWrite AssignedToEmployee 'context =>
+                    {
+                        Guid pricipalId = context.Repository.Common.Principal.Query()
+                            .Where(e => e.Name == context.UserInfo.UserName)
+                            .Select(e => e.ID)
+                            .SingleOrDefault();
+ 
+                        return item => item.EmployeeID == pricipalId;
+                    }';
+
+
+        }
     }
 
     Parameter GetByAuthor
@@ -59,6 +93,8 @@ Module Bookstore
     Entity Person
     {
         ShortString Name;
+
+        MonitoredRecord;
     }
 
     Entity Comment
@@ -67,7 +103,12 @@ Module Bookstore
         LongString Text;
 
         ItemFilter NegativeComment 'comment=>comment.Text.Contains("bad") || comment.Text.Contains("worst")';
+     
         
+        RowPermissions
+        {            
+            InheritFrom Bookstore.Comment.Book;
+        }
     }
 
     Entity ChildrensBook
@@ -104,7 +145,11 @@ Module Bookstore
 
         Logging { AllProperties; }
 
+        DateTime TimeOfModification { LastModifiedTime; }
+
         Deactivatable;
+
+        
     }
 
     Entity BookTopic
@@ -153,6 +198,11 @@ Module Bookstore
 
         ItemFilter HighRating 'item => item.Book.Extension_BookRating.Rating > 100';
         InvalidData HighRating 'You are not allowed to dispose a book with rating above 100.';
+    }
+
+    Entity Country
+    {
+        CodeTable;
     }
 }
 

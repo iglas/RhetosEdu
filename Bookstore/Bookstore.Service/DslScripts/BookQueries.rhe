@@ -91,16 +91,17 @@
         Decimal Rating;
     }   
     
-    SqlView ActiveEmployees <SQL\BookView.sql>;    
+    SqlView BooksInfo2 <SQL\BookView.sql>;    
 
-    SqlQueryable ActiveEmployeesFromSqlView 
-
-    "SELECT * FROM Bookstore.ActiveEmployees"
+        SqlQueryable BooksInfo2SqlView 
+    "SELECT * FROM Bookstore.BooksInfo2"
 
     {
         ShortString Title;
         ShortString Code;
         ShortString Genre;
         Bool Fiction;
+
+        AutoDetectSqlDependencies;
     }
 }
