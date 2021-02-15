@@ -62,18 +62,10 @@ void Main()
         var context = container.Resolve<Common.ExecutionContext>();
         var repository = context.Repository;
 
-        var book = repository.Bookstore.Book.Query(new Guid[]{Guid.Parse("5CBA46C2-B8DA-450B-A743-76DBD8469B7A")});
-
-		book.ToString().Dump();
-		book.ToList().Dump();
+        	
+		var newComment = new Bookstore.Comment(){BookID = Guid.Parse("31AD4FCD-F6F5-4E01-8316-51AEC45F82CD"), Text="Coment2"};
 		
-		book.Single().NumberOfPages = book.Single().NumberOfPages +1; 
-		
-		repository.Bookstore.Book.Update(book.ToList());
-		
-		//var newTopic = new Bookstore.Topic(){Name = "Horror"};
-		
-		//repository.Bookstore.Topic.Insert(newTopic);
+		repository.Bookstore.Comment.Insert(newComment);
 		
 		Console.WriteLine("Done.");
 		
